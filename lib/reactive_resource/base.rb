@@ -1,10 +1,11 @@
 require 'active_resource'
 
-# The class that all ReactiveResourse resources should inherit
-# from. This class fixes and patches over a lot of the broken stuff in
-# Active Resource, and the differences between the client-side Rails
-# REST stuff and the server-side Rails REST stuff.
 module ReactiveResource
+  
+  # The class that all ReactiveResourse resources should inherit
+  # from. This class fixes and patches over a lot of the broken stuff in
+  # Active Resource, and the differences between the client-side Rails
+  # REST stuff and the server-side Rails REST stuff.
   class Base < ActiveResource::Base
     extend Extensions::RelativeConstGet
     # Call this method to transform a resource into a 'singleton'
@@ -35,7 +36,8 @@ module ReactiveResource
       found_object
     end
     
-    # Collection name is singular for singleton resources.
+    # Override ActiveResource, because collection name is singular for
+    # singleton resources.
     def self.collection_name
       if singleton?
         element_name
@@ -163,7 +165,9 @@ module ReactiveResource
     def self.belongs_to_with_parents
       belongs_to.map(&:associated_attributes).flatten.uniq
     end
-    
+
+    # All the classes that this class references in its +belongs_to+,
+    # along with their parents, and so on.
     def self.parents
       @parents ||= belongs_to.map(&:associated_class)
     end

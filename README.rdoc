@@ -1,0 +1,72 @@
+= Reactive Resource
+
+Reactive Resource is a collection of extensions extracted from
+ActiveResource wrappers around various APIs. 
+
+== Usage
+
+After installing the gem, your ActiveResource models should inherit
+from <tt>ReactiveResource::Base</tt> instead of
+<tt>ActiveResource::Base</tt>.
+
+== Associations
+
+The most useful thing Reactive Resource adds to ActiveResource is read
+support for associations. This allows you to specify relationships between objects:
+
+  class ReactiveResource::Lawyer < ReactiveResource::Base
+    has_many :addresses
+  end
+  
+  class ReactiveResource::Address < ReactiveResource::Base
+    belongs_to :lawyer
+    has_many :phones
+  end
+  
+  class ReactiveResource::Phone < ReactiveResource::Base
+    belongs_to :address
+  end
+
+and allows you to make calls like:
+
+  ReactiveResource::Lawyer.find(1).addresses.first.phones
+
+This also takes care of URL generation for the associated objects, so
+the above command will hit <tt>/lawyers/1.json</tt>, then
+<tt>/lawyers/1/addresses.json</tt>, then
+<tt>/lawyers/1/addresses/:id/phones.json</tt>.
+
+Currently, Reactive Resource only supports 'read-style'
+associations. It does not yet support things like +build_association+
+and +association=+.
+
+== Other additions
+
+=== Nested routes
+
+One thing ActiveResource was lacking was good support for generating
+nested paths for child resources. Reactive Resource uses the
++belongs_to+ declarations to generate paths like
+<tt>/lawyers/1/addresses.json</tt>, without having to specify all the paths
+in each class. 
+
+=== Support for singleton resources
+
+For singleton resources, ActiveResource would still use the plural and
+generate paths like "/lawyers/1/headshots.json". I didn't like this, so you
+can now mark a resource as a singleton resource:
+
+  class ReactiveResource::Headshot < ReactiveResource::Base
+    singleton
+  end
+
+and the paths will be generated correctly. This is based on the patch
+at https://rails.lighthouseapp.com/projects/8994/tickets/4348-supporting-singleton-resources-in-activeresource
+
+=== Support for setting URL options after creation
+
+In ActiveResource, if you had nested URLs specified in the resource
+path in your class definition, you had to set those params at the
+object's creation time. Reactive Resource allows you to set those
+parameters at any time after object creation.
+

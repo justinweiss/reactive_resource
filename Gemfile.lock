@@ -2,13 +2,26 @@ PATH
   remote: .
   specs:
     reactive_resource (0.0.1)
+      activeresource (~> 2.3.10)
 
 GEM
   remote: http://rubygems.org/
   specs:
+    activeresource (2.3.10)
+      activesupport (= 2.3.10)
+    activesupport (2.3.10)
+    addressable (2.2.2)
+    crack (0.1.8)
+    shoulda (2.11.3)
+    webmock (1.6.2)
+      addressable (>= 2.2.2)
+      crack (>= 0.1.7)
 
 PLATFORMS
   ruby
 
 DEPENDENCIES
+  activeresource (~> 2.3.10)
   reactive_resource!
+  shoulda (~> 2.11.3)
+  webmock (~> 1.6.1)
