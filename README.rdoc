@@ -38,7 +38,7 @@ the above command will hit <tt>/lawyers/1.json</tt>, then
 
 Currently, Reactive Resource only supports 'read-style'
 associations. It does not yet support things like +build_association+
-and +association=+.
+and <tt>association=</tt>.
 
 == Other additions
 
