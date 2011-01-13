@@ -5,7 +5,11 @@ module ReactiveResource
       attr_reader :klass, :attribute, :options
       
       def associated_class
-        options[:class_name] || klass.relative_const_get(attribute.to_s.capitalize)
+        if options[:class_name]
+          options[:class_name].constantize
+        else
+          klass.relative_const_get(attribute.to_s.camelize)
+        end
       end
 
       # A flattened list of attributes from the entire association
@@ -13,7 +17,7 @@ module ReactiveResource
       def associated_attributes
         attributes = [attribute]
         if associated_class
-          attributes += associated_class.belongs_to.map(&:attribute)
+          attributes += associated_class.belongs_to_associations.map(&:attribute)
         end
         attributes.uniq
       end
@@ -61,7 +65,7 @@ module ReactiveResource
         end
         
         # Recurse through the parent object.
-        associated_class.belongs_to.each do |parent_attribute|
+        associated_class.belongs_to_associations.each do |parent_attribute|
           parent_attribute.add_helper_methods(klass, parent_attribute.attribute)
         end
       end

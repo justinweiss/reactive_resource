@@ -5,7 +5,11 @@ module ReactiveResource
       attr_reader :klass, :attribute, :options
       
       def associated_class
-        options[:class_name] || klass.relative_const_get(attribute.to_s.capitalize)
+        if options[:class_name]
+          options[:class_name].constantize
+        else
+          klass.relative_const_get(attribute.to_s.camelize)
+        end
       end
 
       def resolve_relationship(object)

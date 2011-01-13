@@ -2,6 +2,24 @@ require 'test_helper'
 
 class ReactiveResource::BaseTest < Test::Unit::TestCase
 
+  context "A resource that inherits from another resource" do
+    setup do
+      @object = ChildResource::Address.new
+    end
+
+    should "inherit its parents' associations" do
+      assert_contains @object.class.associations.map(&:attribute), :phones
+    end
+
+    should "prefer to resolve to another child class" do
+      assert_equal ChildResource::Phone, @object.class.associations.detect {|assoc| assoc.attribute == :phones }.associated_class
+    end
+
+    should "follow relationships where :class_name is specified" do
+      assert_equal ReactiveResource::Lawyer, @object.class.associations.detect {|assoc| assoc.attribute == :lawyer }.associated_class
+    end
+  end
+  
   context "A resource that inherits from ReactiveResource::Base" do
     
     setup do

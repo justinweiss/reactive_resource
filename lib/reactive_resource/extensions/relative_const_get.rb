@@ -16,7 +16,7 @@ module Extensions
         if namespace = namespaces.reverse.detect { |ns| ns.const_defined?(*const_args) }
           return namespace.const_get(*const_args)
         else
-          raise NameError
+          raise NameError, "Couldn't find a class named #{name}"
         end
       else
         const_get(name)

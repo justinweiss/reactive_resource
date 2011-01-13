@@ -14,12 +14,12 @@ module ReactiveResource
     # https://rails.lighthouseapp.com/projects/8994/tickets/4348-supporting-singleton-resources-in-activeresource
     # for more info.
     def self.singleton
-      @singleton = true
+      write_inheritable_attribute(:singleton, true)
     end
 
     # +true+ if this resource is a singleton resource
     def self.singleton?
-      @singleton
+      read_inheritable_attribute(:singleton)
     end
     
     # Active Resource's find_one is broken if you don't pass a :from,
@@ -109,7 +109,7 @@ module ReactiveResource
       association_prefix = ''
       parent_prefix = ''
       
-      if belongs_to
+      if belongs_to_associations
         # Recurse to add the parent resource hierarchy. For Phone, for
         # instance, this will add the '/lawyers/:id' part of the URL,
         # which it knows about from the Address class.
@@ -117,7 +117,7 @@ module ReactiveResource
           parent_prefix = parent.association_prefix(options) if parent_prefix.blank?
         end
 
-        belongs_to.each do |association|
+        belongs_to_associations.each do |association|
           param = association.attribute
           if association_prefix.blank? && param_value = options.delete("#{param}_id".intern) # only take the first one
             association_prefix = "#{param.to_s.pluralize}/#{param_value}/"
@@ -127,35 +127,48 @@ module ReactiveResource
       parent_prefix + association_prefix
     end
 
+    class << self
+      attr_accessor :associations
+    end
+    self.associations = []
+    
+    # Add a has_one relationship to another class.
+    def self.has_one(attribute, options = {})
+      self.associations << Association::HasOneAssociation.new(self, attribute, options)
+    end
+    
+    # Add a has_many relationship to another class.
+    def self.has_many(attribute, options = {})
+      self.associations << Association::HasManyAssociation.new(self, attribute, options)
+    end
+
     # Add a parent-child relationship between +attribute+ and this
     # class. This allows parameters like +attribute_id+ to contribute to
     # generating nested urls.
-    def self.belongs_to(attribute = nil, options = {})
-      @belongs_to ||= []
-      if attribute
-        @belongs_to << Association::BelongsToAssociation.new(self, attribute, options)
-      end
-      @belongs_to
+    def self.belongs_to(attribute, options = {})
+      self.associations << Association::BelongsToAssociation.new(self, attribute, options)
     end
 
-    # Add a has_many relationship to another class.
-    def self.has_many(attribute = nil, options = {})
-      @has_many ||= []
-      if attribute
-        @has_many << Association::HasManyAssociation.new(self, attribute, options)
-      end
-      @has_many
+    # Returns all of the belongs_to associations this class has.
+    def self.belongs_to_associations
+      self.associations.select {|assoc| assoc.kind_of?(Association::BelongsToAssociation) }
     end
 
-    # Add a has_one relationship to another class.
-    def self.has_one(attribute = nil, options = {})
-      @has_one ||= []
-      if attribute
-        @has_one << Association::HasOneAssociation.new(self, attribute, options)
+    # Fix up the +klass+ attribute of all of our associations to point
+    # to the new child class instead of the parent class, so class
+    # lookup works as expected
+    def self.inherited(child)
+      super(child)
+      child.associations = []
+      associations.each do |association|
+        begin
+          child.associations << association.class.new(child, association.attribute, association.options)
+        rescue NameError
+          # assume that they'll fix the association later by manually specifying :class_name in the belongs_to
+        end
       end
-      @has_one
     end
-
+    
     # merges in all of this class' associated classes' belongs_to
     # associations, so we can handle deeply nested routes. So, for
     # instance, if we have phone => address => lawyer, phone will look
@@ -163,13 +176,13 @@ module ReactiveResource
     # allows us to have both lawyer_id and address_id at url generation
     # time.
     def self.belongs_to_with_parents
-      belongs_to.map(&:associated_attributes).flatten.uniq
+      belongs_to_associations.map(&:associated_attributes).flatten.uniq
     end
 
     # All the classes that this class references in its +belongs_to+,
     # along with their parents, and so on.
     def self.parents
-      @parents ||= belongs_to.map(&:associated_class)
+      @parents ||= belongs_to_associations.map(&:associated_class)
     end
 
   end

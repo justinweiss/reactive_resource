@@ -28,6 +28,17 @@ class ReactiveResource::Address < ReactiveResource::Base
   has_many :phones
 end
 
+module ChildResource
+  
+  class Address < ReactiveResource::Address
+    belongs_to :lawyer, :class_name => "ReactiveResource::Lawyer"
+    belongs_to :doctor, :class_name => "ReactiveResource::Doctor"
+  end
+
+  class Phone < ReactiveResource::Address
+  end
+end
+
 class ReactiveResource::Phone < ReactiveResource::Base
   belongs_to :address
 end
