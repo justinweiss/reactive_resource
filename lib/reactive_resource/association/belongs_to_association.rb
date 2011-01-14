@@ -1,9 +1,20 @@
 module ReactiveResource
   module Association
+    # Represents and resolves a belongs_to association.
     class BelongsToAssociation
 
-      attr_reader :klass, :attribute, :options
-      
+      # The class this association is attached to
+      attr_reader :klass
+
+      # The attribute name this association represents
+      attr_reader :attribute
+
+      # additional options passed in when the association was created
+      attr_reader :options
+
+      # Returns the class name of the target of the association. Based
+      # off of +attribute+ unless +class_name+ was passed in the
+      # +options+ hash.
       def associated_class
         if options[:class_name]
           options[:class_name].constantize
@@ -22,6 +33,8 @@ module ReactiveResource
         attributes.uniq
       end
 
+      # Called when this assocation is referenced. Finds and returns
+      # the target of this association.
       def resolve_relationship(object)
         parent_params = object.prefix_options.dup
         parent_params.delete("#{attribute}_id".intern)
@@ -32,9 +45,9 @@ module ReactiveResource
       # these objects a bit more straightforward. If the attribute name
       # is +lawyer+, it will add:
       #
-      # * lawyer: returns the actual lawyer object (after doing a web request)
-      # * lawyer_id: returns the lawyer id
-      # * lawyer_id=: sets the lawyer id
+      # [lawyer] returns the actual lawyer object (after doing a web request)
+      # [lawyer_id] returns the lawyer id
+      # [lawyer_id=] sets the lawyer id
       def add_helper_methods(klass, attribute)
         association = self
         
@@ -70,6 +83,7 @@ module ReactiveResource
         end
       end
 
+      # Create a new belongs_to association.
       def initialize(klass, attribute, options)
         @klass = klass
         @attribute = attribute

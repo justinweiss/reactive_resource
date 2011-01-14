@@ -1,4 +1,7 @@
 module Extensions
+  # Supplies RelativeConstGet#relative_const_get, which is like +const_get+, except it
+  # attempts to resolve using the current class's module, rather than
+  # the class's scope itself.
   module RelativeConstGet
 
     # Finds the constant with name +name+, relative to the calling

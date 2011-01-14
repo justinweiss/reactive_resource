@@ -1,9 +1,20 @@
 module ReactiveResource
   module Association
+    # Represents and resolves a has_one association
     class HasOneAssociation
 
-      attr_reader :klass, :attribute, :options
-      
+      # The class this association is attached to
+      attr_reader :klass
+
+      # The attribute name this association represents
+      attr_reader :attribute
+
+      # additional options passed in when the association was created
+      attr_reader :options
+
+      # Returns the class name of the target of the association. Based
+      # off of +attribute+ unless +class_name+ was passed in the
+      # +options+ hash.
       def associated_class
         if options[:class_name]
           options[:class_name].constantize
@@ -12,6 +23,8 @@ module ReactiveResource
         end
       end
 
+      # Called when this assocation is referenced. Finds and returns
+      # the target of this association.
       def resolve_relationship(object)
         id_attribute = "#{klass.name.split("::").last.underscore}_id"
         associated_class.find(:one, :params => object.prefix_options.merge(id_attribute => object.id))
@@ -21,7 +34,7 @@ module ReactiveResource
       # these objects a bit more straightforward. If the attribute name
       # is +headshot+, it will add:
       #
-      # * headshot: returns the associated headshot
+      # [headshot] returns the associated headshot
       def add_helper_methods(klass, attribute)
         association = self
         klass.class_eval do 
@@ -35,7 +48,8 @@ module ReactiveResource
           end
         end
       end
-
+      
+      # Create a new has_one association.
       def initialize(klass, attribute, options)
         @klass = klass
         @attribute = attribute
