@@ -13,7 +13,7 @@ module ReactiveResource
       end
 
       def resolve_relationship(object)
-        id_attribute = "#{klass.name.split("::").last.downcase}_id"
+        id_attribute = "#{klass.name.split("::").last.underscore}_id"
         associated_class.find(:all, :params => object.prefix_options.merge(id_attribute => object.id))
       end
       
