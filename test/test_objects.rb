@@ -42,3 +42,19 @@ end
 class ReactiveResource::Phone < ReactiveResource::Base
   belongs_to :address
 end
+
+module ActiveResource
+  module Formats
+    module NoFormatFormat
+      extend ActiveResource::Formats::JsonFormat
+      extend self
+      def extension
+        ''
+      end
+    end
+  end
+end
+
+class ReactiveResource::NoExtension < ReactiveResource::Base
+  self.format = :no_format
+end

@@ -12,6 +12,7 @@ GEM
     activesupport (2.3.10)
     addressable (2.2.2)
     crack (0.1.8)
+    rake (0.8.7)
     shoulda (2.11.3)
     webmock (1.6.2)
       addressable (>= 2.2.2)
@@ -22,6 +23,7 @@ PLATFORMS
 
 DEPENDENCIES
   activeresource (~> 2.3.10)
+  rake
   reactive_resource!
   shoulda (~> 2.11.3)
   webmock (~> 1.6.1)

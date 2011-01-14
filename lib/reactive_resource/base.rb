@@ -46,18 +46,22 @@ module ReactiveResource
       end
     end
 
+    def self.extension
+      format.extension.blank? ? "" : ".#{format.extension}"
+    end
+
     # This method differs from its parent by adding association_prefix
     # into the generated url. This is needed to support belongs_to
     # associations.
     def self.collection_path(prefix_options = {}, query_options = nil)
       prefix_options, query_options = split_options(prefix_options) if query_options.nil?
-      "#{prefix(prefix_options)}#{association_prefix(prefix_options)}#{collection_name}.#{format.extension}#{query_string(query_options)}"
+      "#{prefix(prefix_options)}#{association_prefix(prefix_options)}#{collection_name}#{extension}#{query_string(query_options)}"
     end
 
     # Same as collection_path, except with an extra +method_name+
     def self.custom_method_collection_url(method_name, options = {})
       prefix_options, query_options = split_options(options)
-      "#{prefix(prefix_options)}#{association_prefix(prefix_options)}#{collection_name}/#{method_name}.#{format.extension}#{query_string(query_options)}"
+      "#{prefix(prefix_options)}#{association_prefix(prefix_options)}#{collection_name}/#{method_name}#{extension}#{query_string(query_options)}"
     end
 
     # This is overridden to support nested urls for belongs_to
@@ -70,7 +74,7 @@ module ReactiveResource
       if id || !singleton?
         element_path += "/#{id}"
       end
-      element_path += ".#{format.extension}#{query_string(query_options)}"
+      element_path += "#{extension}#{query_string(query_options)}"
       element_path
     end
 
@@ -118,9 +122,8 @@ module ReactiveResource
         end
 
         belongs_to_associations.each do |association|
-          param = association.attribute
-          if association_prefix.blank? && param_value = options.delete("#{param}_id".intern) # only take the first one
-            association_prefix = "#{param.to_s.pluralize}/#{param_value}/"
+          if association_prefix.blank? && param_value = options.delete("#{association.attribute}_id".intern) # only take the first one
+            association_prefix = "#{association.associated_class.collection_name}/#{param_value}/"
           end
         end
       end

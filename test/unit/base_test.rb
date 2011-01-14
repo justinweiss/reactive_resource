@@ -150,4 +150,20 @@ class ReactiveResource::BaseTest < Test::Unit::TestCase
     end
 
   end
+
+  context "A resource without an extension" do
+    should "hit the correct urls" do
+      stub_request(:get, "https://api.avvo.com/api/1/no_extensions")
+      @object = ReactiveResource::NoExtension.find(:all)
+      assert_requested(:get, "https://api.avvo.com/api/1/no_extensions")
+
+      stub_request(:put, "https://api.avvo.com/api/1/no_extensions/1")
+      @object = ReactiveResource::NoExtension.new(:id => 1).save
+      assert_requested(:put, "https://api.avvo.com/api/1/no_extensions/1")
+
+      stub_request(:get, "https://api.avvo.com/api/1/no_extensions/test")
+      @object = ReactiveResource::NoExtension.get(:test)
+      assert_requested(:get, "https://api.avvo.com/api/1/no_extensions/test")
+    end
+  end
 end
