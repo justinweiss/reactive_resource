@@ -1,7 +1,10 @@
 = Reactive Resource
 
-Reactive Resource is a collection of extensions extracted from
-ActiveResource wrappers around various APIs. 
+Reactive Resource is a useful collection of extensions extracted from
+ActiveResource wrappers around various APIs. Among other things, it
+adds +belongs_to+, +has_one+, and +has_many+ relationships to
+ActiveResource models and has significantly better support for
+one-to-one relationships.
 
 == Usage
 
@@ -53,7 +56,7 @@ in each class.
 === Support for singleton resources
 
 For singleton resources, ActiveResource would still use the plural and
-generate paths like "/lawyers/1/headshots.json". I didn't like this, so you
+generate paths like <tt>/lawyers/1/headshots.json</tt>. I didn't like this, so you
 can now mark a resource as a singleton resource:
 
   class ReactiveResource::Headshot < ReactiveResource::Base
@@ -69,4 +72,3 @@ In ActiveResource, if you had nested URLs specified in the resource
 path in your class definition, you had to set those params at the
 object's creation time. Reactive Resource allows you to set those
 parameters at any time after object creation.
-
