@@ -1,7 +1,7 @@
 PATH
   remote: .
   specs:
-    reactive_resource (0.0.1)
+    reactive_resource (0.5.0)
       activeresource (~> 2.3.10)
 
 GEM
