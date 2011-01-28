@@ -14,7 +14,7 @@ Gem::Specification.new do |s|
 
   s.rubyforge_project = "reactive_resource"
 
-  s.add_dependency "activeresource", '~> 2.3.10'
+  s.add_dependency "activeresource", '>= 2.3.10'
   s.add_development_dependency "shoulda", '~> 2.11.3'
   s.add_development_dependency "webmock", '~> 1.6.1'
   
