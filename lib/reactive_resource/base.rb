@@ -194,6 +194,25 @@ module ReactiveResource
       end
     end
 
+    # ActiveResource (as of 3.0) assumes that you have a to_x method
+    # on ActiveResource::Base for any format 'x' that is assigned to
+    # the record. This seems weird -- the format should take care of
+    # encoding, not the object itself. To keep this as stable as
+    # possible, we should use to_x if it's defined, otherwise just
+    # delegate to the format's 'encode' function. This is how things
+    # worked as of Rails 2.3.
+    def encode(options = {})
+      if defined?(ActiveResource::VERSION) && ActiveResource::VERSION::MAJOR == 3
+        if respond_to?("to_#{self.class.format.extension}")
+          super(options)
+        else
+          self.class.format.encode(attributes, options)
+        end
+      else
+        super(options)
+      end
+    end
+
     # belongs_to in ReactiveResource works a little differently than
     # ActiveRecord. Because we have to deal with full class hierachies
     # in order to generate the full URL (as mentioned in
