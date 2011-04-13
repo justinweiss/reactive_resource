@@ -28,6 +28,19 @@ class ReactiveResource::Address < ReactiveResource::Base
   has_many :phones
 end
 
+class ReactiveResource::Phone < ReactiveResource::Base
+  belongs_to :address
+end
+
+class ReactiveResource::Post < ReactiveResource::Base
+  has_one :lawyer_post
+end
+
+class ReactiveResource::LawyerPost < ReactiveResource::Base
+  belongs_to :lawyer
+  belongs_to :post
+end
+
 module ChildResource
   
   class Address < ReactiveResource::Address
@@ -37,10 +50,6 @@ module ChildResource
 
   class Phone < ReactiveResource::Address
   end
-end
-
-class ReactiveResource::Phone < ReactiveResource::Base
-  belongs_to :address
 end
 
 module ActiveResource

@@ -166,4 +166,20 @@ class ReactiveResource::BaseTest < Test::Unit::TestCase
       assert_requested(:get, "https://api.avvo.com/api/1/no_extensions/test")
     end
   end
+
+  context "A resource with a two-way belongs to association" do
+    should "convert unused prefix options to attributes" do
+      stub_request(:post, "https://api.avvo.com/api/1/lawyers/1/lawyer_posts.json").
+        with(:body => {"lawyer_post" => {"post_id" => 2}})
+      @object = ReactiveResource::LawyerPost.new(:lawyer_id => 1, :post_id => 2).save
+      assert_requested(:post, "https://api.avvo.com/api/1/lawyers/1/lawyer_posts.json")
+    end
+
+    should "set the attributes correctly when it's created" do
+      @object = ReactiveResource::LawyerPost.new(:lawyer_id => 1, :post_id => 2)
+      assert_not_nil @object.attributes[:post_id]
+      assert_not_nil @object.attributes[:lawyer_id]
+    end
+  end
+  
 end

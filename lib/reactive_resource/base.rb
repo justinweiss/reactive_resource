@@ -91,6 +91,11 @@ module ReactiveResource
     def load(attributes)
       self.class.belongs_to_with_parents.each do |belongs_to_param|
         attributes["#{belongs_to_param}_id".intern] ||= prefix_options["#{belongs_to_param}_id".intern]
+
+        # also set prefix attributes as real attributes. Otherwise,
+        # belongs_to attributes will be stripped out of the response
+        # even if we aren't actually using the association.
+        @attributes["#{belongs_to_param}_id".intern] = attributes["#{belongs_to_param}_id".intern]
       end
       super(attributes)
     end
@@ -109,6 +114,33 @@ module ReactiveResource
       @prefix_parameters
     end
 
+    # Returns a list of the belongs_to associations we will use to
+    # generate the full path for this resource.
+    def self.prefix_associations(options)
+      options = options.dup
+      used_associations = []
+      parent_associations = []
+      
+      # Recurse to add the parent resource hierarchy. For Phone, for
+      # instance, this will add the '/lawyers/:id' part of the URL,
+      # which it knows about from the Address class.
+      parents.each do |parent|
+        parent_associations = parent.prefix_associations(options)
+        break unless parent_associations.empty?
+      end
+
+      # The association chain we're following
+      used_association = nil
+      
+      belongs_to_associations.each do |association|
+        if !used_association && param_value = options.delete("#{association.attribute}_id".intern) # only take the first one
+          used_associations << association
+          break
+        end
+      end
+      parent_associations + used_associations
+    end
+
     # Generates the URL prefix that the belongs_to parameters and
     # associations refer to. For example, a license with params
     # :lawyer_id => 2 will return 'lawyers/2/' and a phone with params
@@ -117,23 +149,21 @@ module ReactiveResource
     def self.association_prefix(options)
       options = options.dup
       association_prefix = ''
-      parent_prefix = ''
       
       if belongs_to_associations
-        # Recurse to add the parent resource hierarchy. For Phone, for
-        # instance, this will add the '/lawyers/:id' part of the URL,
-        # which it knows about from the Address class.
-        parents.each do |parent|
-          parent_prefix = parent.association_prefix(options) if parent_prefix.blank?
-        end
 
-        belongs_to_associations.each do |association|
-          if association_prefix.blank? && param_value = options.delete("#{association.attribute}_id".intern) # only take the first one
-            association_prefix = "#{association.associated_class.collection_name}/#{param_value}/"
-          end
-        end
+        used_associations = prefix_associations(options)
+        
+        association_prefix = used_associations.map do |association|
+          collection_name = association.associated_class.collection_name
+          value = options.delete("#{association.attribute}_id".intern)
+          "#{collection_name}/#{value}"
+        end.join('/')
+
+        # add trailing slash
+        association_prefix << '/' unless used_associations.empty?
       end
-      parent_prefix + association_prefix
+      association_prefix
     end
 
     class << self
@@ -211,6 +241,27 @@ module ReactiveResource
       else
         super(options)
       end
+    end
+
+    # In order to support two-way belongs_to associations in a
+    # reasonable way, we duplicate all of the prefix options as real
+    # attributes (so license.lawyer_id will set both the lawyer_id
+    # attribute and the lawyer_id prefix option). When we're ready to
+    # save, we should take all the parameters that we're already
+    # sending as prefix options and remove them from the model's
+    # attributes so we don't send duplicates down the wire. This way,
+    # if you have an object that belongs_to :lawyer and belongs_to
+    # :phone (in that order), setting lawyer_id and phone_id will
+    # treat lawyer_id as a prefix option and phone_id as a normal
+    # attribute.
+    def save
+      if self.class.belongs_to_associations
+        used_attributes = self.class.prefix_associations(prefix_options).map {|association| association.attribute}
+        used_attributes.each do |attribute|
+          attributes.delete("#{attribute}_id".intern)
+        end
+      end
+      super
     end
 
     # belongs_to in ReactiveResource works a little differently than

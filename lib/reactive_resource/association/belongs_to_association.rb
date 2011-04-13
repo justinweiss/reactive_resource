@@ -60,6 +60,7 @@ module ReactiveResource
           # address.lawyer_id = 3
           define_method("#{attribute}_id=") do |value|
             prefix_options["#{attribute}_id".intern] = value
+            attributes["#{attribute}_id".intern] = value
           end
 
           # address.lawyer
