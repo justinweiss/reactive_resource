@@ -55,12 +55,13 @@ module ReactiveResource
           # address.lawyer_id
           define_method("#{attribute}_id") do
             prefix_options["#{attribute}_id".intern]
+            super()
           end
           
           # address.lawyer_id = 3
           define_method("#{attribute}_id=") do |value|
             prefix_options["#{attribute}_id".intern] = value
-            attributes["#{attribute}_id".intern] = value
+            super(value)
           end
 
           # address.lawyer

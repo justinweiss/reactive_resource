@@ -175,9 +175,31 @@ class ReactiveResource::BaseTest < Test::Unit::TestCase
       assert_requested(:post, "https://api.avvo.com/api/1/lawyers/1/lawyer_posts.json")
     end
 
+    should "treat returned prefix parameters as regular parameters" do
+      stub_request(:get, "https://api.avvo.com/api/1/lawyers/1/lawyer_posts.json").
+        to_return(:body =>[{"id" => 1, "post_id" => 2}].to_json)
+      stub_request(:put, "https://api.avvo.com/api/1/lawyers/1/lawyer_posts/1.json").
+        with(:body => {"lawyer_post" => {"id" => 1, "post_id" => 3}})
+      
+      @object = ReactiveResource::LawyerPost.find(:all, :params => {:lawyer_id => 1}).first
+      assert_not_nil @object.post_id
+
+      @object.post_id = 3
+      @object.save
+
+      assert_requested(:put, "https://api.avvo.com/api/1/lawyers/1/lawyer_posts/1.json")
+    end
+
     should "set the attributes correctly when it's created" do
       @object = ReactiveResource::LawyerPost.new(:lawyer_id => 1, :post_id => 2)
       assert_not_nil @object.attributes[:post_id]
+      assert_not_nil @object.attributes[:lawyer_id]
+    end
+
+    should "set the attributes correctly when it's created with strings" do
+      @object = ReactiveResource::LawyerPost.new("lawyer_id" => 1, "post_id" => 2)
+      assert_not_nil @object.post_id
+      assert_not_nil @object.attributes["post_id"]
       assert_not_nil @object.attributes[:lawyer_id]
     end
   end

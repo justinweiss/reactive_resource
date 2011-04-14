@@ -89,13 +89,14 @@ module ReactiveResource
     # be in the URL anyway), so we'll try to inject them based on the
     # attributes of the object we just used.
     def load(attributes)
+      attributes = attributes.stringify_keys
       self.class.belongs_to_with_parents.each do |belongs_to_param|
-        attributes["#{belongs_to_param}_id".intern] ||= prefix_options["#{belongs_to_param}_id".intern]
+        attributes["#{belongs_to_param}_id"] ||= prefix_options["#{belongs_to_param}_id".intern]
 
         # also set prefix attributes as real attributes. Otherwise,
         # belongs_to attributes will be stripped out of the response
         # even if we aren't actually using the association.
-        @attributes["#{belongs_to_param}_id".intern] = attributes["#{belongs_to_param}_id".intern]
+        @attributes["#{belongs_to_param}_id"] = attributes["#{belongs_to_param}_id"]
       end
       super(attributes)
     end
