@@ -34,7 +34,7 @@ module ReactiveResource
       if !found_object && singleton?
         prefix_options, query_options = split_options(options[:params])
         path = element_path(nil, prefix_options, query_options)
-        found_object = instantiate_record(connection.get(path, headers), prefix_options)
+        found_object = instantiate_record(format.decode(connection.get(path, headers).body), prefix_options)
       end
       found_object
     end

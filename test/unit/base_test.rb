@@ -52,7 +52,7 @@ class ReactiveResource::BaseTest < Test::Unit::TestCase
     context "with a has_one relationship to another object" do
       should "hit the associated object's URL with the correct parameters when requested" do
         stub_request(:get, "https://api.avvo.com/api/1/lawyers/1/headshot.json")\
-          .to_return(:body => {:headhshot => {:headshot_url => "blah"}}.to_json)
+          .to_return(:body => {:headshot => {:headshot_url => "blah"}}.to_json)
         @object.id = 1
         @object.headshot
         assert_requested(:get, "https://api.avvo.com/api/1/lawyers/1/headshot.json")
