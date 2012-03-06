@@ -2,7 +2,7 @@ require 'active_resource'
 require 'active_support/all'
 
 module ReactiveResource
-  
+
   # The class that all ReactiveResourse resources should inherit
   # from. This class fixes and patches over a lot of the broken stuff
   # in Active Resource, and smoothes out the differences between the
@@ -10,21 +10,23 @@ module ReactiveResource
   # It also adds support for ActiveRecord-like associations.
   class Base < ActiveResource::Base
     extend Extensions::RelativeConstGet
+    class_attribute :singleton_resource
+
     # Call this method to transform a resource into a 'singleton'
     # resource. This will fix the paths Active Resource generates for
     # singleton resources. See
     # https://rails.lighthouseapp.com/projects/8994/tickets/4348-supporting-singleton-resources-in-activeresource
     # for more info.
     def self.singleton
-      write_inheritable_attribute(:singleton, true)
+      self.singleton_resource = true
     end
 
     # +true+ if this resource is a singleton resource, +false+
     # otherwise
     def self.singleton?
-      read_inheritable_attribute(:singleton)
+      self.singleton_resource?
     end
-    
+
     # Active Resource's find_one does nothing if you don't pass a
     # +:from+ parameter. This doesn't make sense if you're dealing
     # with a singleton resource, so if we don't get anything back from
@@ -38,7 +40,7 @@ module ReactiveResource
       end
       found_object
     end
-    
+
     # Override ActiveResource's +collection_name+ to support singular
     # names for singleton resources.
     def self.collection_name
@@ -76,7 +78,7 @@ module ReactiveResource
     def self.element_path(id, prefix_options = {}, query_options = nil)
       prefix_options, query_options = split_options(prefix_options) if query_options.nil?
       element_path = "#{prefix(prefix_options)}#{association_prefix(prefix_options)}#{collection_name}"
-      
+
       # singleton resources don't have an ID
       if id || !singleton?
         element_path += "/#{id}"
@@ -122,7 +124,7 @@ module ReactiveResource
       options = options.dup
       used_associations = []
       parent_associations = []
-      
+
       # Recurse to add the parent resource hierarchy. For Phone, for
       # instance, this will add the '/lawyers/:id' part of the URL,
       # which it knows about from the Address class.
@@ -133,7 +135,7 @@ module ReactiveResource
 
       # The association chain we're following
       used_association = nil
-      
+
       belongs_to_associations.each do |association|
         if !used_association && param_value = options.delete("#{association.attribute}_id".intern) # only take the first one
           used_associations << association
@@ -151,11 +153,11 @@ module ReactiveResource
     def self.association_prefix(options)
       options = options.dup
       association_prefix = ''
-      
+
       if belongs_to_associations
 
         used_associations = prefix_associations(options)
-        
+
         association_prefix = used_associations.map do |association|
           collection_name = association.associated_class.collection_name
           value = options.delete("#{association.attribute}_id".intern)
@@ -173,7 +175,7 @@ module ReactiveResource
       attr_accessor :associations
     end
     self.associations = []
-    
+
     # Add a has_one relationship to another class. +options+ is a hash
     # of extra parameters:
     #
@@ -183,7 +185,7 @@ module ReactiveResource
     def self.has_one(attribute, options = {})
       self.associations << Association::HasOneAssociation.new(self, attribute, options)
     end
-    
+
     # Add a has_many relationship to another class. +options+ is a hash
     # of extra parameters:
     #
