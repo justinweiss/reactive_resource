@@ -80,7 +80,7 @@ module ReactiveResource
       element_path = "#{prefix(prefix_options)}#{association_prefix(prefix_options)}#{collection_name}"
 
       # singleton resources don't have an ID
-      if id || !singleton?
+      if id.present? || !singleton?
         element_path += "/#{id}"
       end
       element_path += "#{extension}#{query_string(query_options)}"
