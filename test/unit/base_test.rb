@@ -18,6 +18,10 @@ class ReactiveResource::BaseTest < Test::Unit::TestCase
     should "follow relationships where :class_name is specified" do
       assert_equal ReactiveResource::Lawyer, @object.class.associations.detect {|assoc| assoc.attribute == :lawyer }.associated_class
     end
+
+    should "return valid path when id is blank" do
+      assert_equal "/api/1/headshot.json", ReactiveResource::Headshot.element_path('')
+    end
   end
 
   context "A resource that inherits from ReactiveResource::Base" do
