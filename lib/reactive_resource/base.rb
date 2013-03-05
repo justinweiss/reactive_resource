@@ -289,5 +289,18 @@ module ReactiveResource
       @parents ||= belongs_to_associations.map(&:associated_class)
     end
 
+    private
+
+    # Same as element_path, except with an extra +method_name+ on
+    # the end to support custom methods
+    def custom_method_element_url(method_name, options = {})
+      prefix_options, query_options = split_options(options)
+      "#{self.class.prefix(prefix_options)}#{self.class.association_prefix(prefix_options)}#{self.class.collection_name}/#{id}/#{method_name}#{self.class.extension}#{self.class.__send__(:query_string, query_options)}"
+    end
+    def custom_method_new_element_url(method_name, options = {})
+      prefix_options, query_options = split_options(options)
+      "#{self.class.prefix(prefix_options)}#{self.class.association_prefix(prefix_options)}#{self.class.collection_name}/new/#{method_name}#{self.class.extension}#{self.class.__send__(:query_string, query_options)}"
+    end
+
   end
 end

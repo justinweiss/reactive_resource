@@ -162,6 +162,31 @@ class ReactiveResource::BaseTest < Test::Unit::TestCase
       end
     end
 
+    context "with custom methods" do
+
+      should "hit the correct collection urls" do
+        stub_request(:post, "https://api.avvo.com/api/1/lawyers/search.json")\
+          .to_return(:body => {:lawyers => [{:id => 2}, {:id => 4}]}.to_json)
+        ReactiveResource::Lawyer.post(:search, {}, {:first_name => "Bob"})
+        assert_requested(:post, "https://api.avvo.com/api/1/lawyers/search.json")
+      end
+
+      should "hit the correct nested collection url" do
+        stub_request(:post, "https://api.avvo.com/api/1/lawyers/1/addresses/search.json")\
+          .to_return(:body => {:addresses => [{:id => 1}, {:id => 3}]}.to_json)
+        ReactiveResource::Address.post(:search, {:lawyer_id => 1}, {:street_name => "21st Ave NE"})
+        assert_requested(:post, "https://api.avvo.com/api/1/lawyers/1/addresses/search.json")
+      end
+
+      should "hit the correct member urls" do
+        stub_request(:get, "https://api.avvo.com/api/1/lawyers/1/billing_plan.json")\
+          .to_return(:body => {:billing_plan => {:type => "hourly", :rate => "200"}}.to_json)
+        @object.id = 1
+        @object.get(:billing_plan, {})
+        assert_requested(:get, "https://api.avvo.com/api/1/lawyers/1/billing_plan.json")
+      end
+    end
+
   end
 
   context "A resource without an extension" do
