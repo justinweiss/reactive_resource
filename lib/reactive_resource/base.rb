@@ -284,7 +284,11 @@ module ReactiveResource
     # associations and merge them in. This allows us to have both
     # lawyer_id and address_id at url generation time.
     def self.belongs_to_with_parents
-      belongs_to_associations.map(&:associated_attributes).flatten.uniq
+      @belongs_to_with_parents ||= begin
+        ret = belongs_to_associations.map(&:associated_attributes)
+        ret += parents.map(&:belongs_to_with_parents)
+        ret.flatten.uniq
+      end
     end
 
     # All the classes that this class references in its +belongs_to+,
