@@ -63,6 +63,19 @@ class ReactiveResource::BaseTest < Test::Unit::TestCase
       end
     end
 
+    context "with a nested has_one relationships" do
+      should "hit the correct url" do
+        stub_request(:get, "https://api.avvo.com/api/1/lawyers/1/headshot.json")\
+          .to_return(:body => {:headshot => {:headshot_url => "blah"}}.to_json)
+        stub_request(:get, "https://api.avvo.com/api/1/lawyers/1/headshot/file.json")\
+          .to_return(:body => {:file => {:file_url => "blah"}}.to_json)
+        @object.id = 1
+        @object.headshot.file
+        assert_requested(:get, "https://api.avvo.com/api/1/lawyers/1/headshot.json")
+        assert_requested(:get, "https://api.avvo.com/api/1/lawyers/1/headshot/file.json")
+      end
+    end
+
     context "with a belongs_to association and correct parameters" do
       setup do 
         @object = ReactiveResource::Address.new(:lawyer_id => 2)

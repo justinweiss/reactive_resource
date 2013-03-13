@@ -137,7 +137,7 @@ module ReactiveResource
       used_association = nil
 
       belongs_to_associations.each do |association|
-        if !used_association && param_value = options.delete("#{association.attribute}_id".intern) # only take the first one
+        if !used_association && (association.associated_class.singleton? || param_value = options.delete("#{association.attribute}_id".intern)) # only take the first one
           used_associations << association
           break
         end
@@ -160,8 +160,12 @@ module ReactiveResource
 
         association_prefix = used_associations.map do |association|
           collection_name = association.associated_class.collection_name
-          value = options.delete("#{association.attribute}_id".intern)
-          "#{collection_name}/#{value}"
+          if association.associated_class.singleton?
+            collection_name
+          else
+            value = options.delete("#{association.attribute}_id".intern)
+            "#{collection_name}/#{value}"
+          end
         end.join('/')
 
         # add trailing slash

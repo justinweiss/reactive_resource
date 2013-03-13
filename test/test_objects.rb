@@ -20,6 +20,12 @@ class ReactiveResource::Headshot < ReactiveResource::Base
   singleton
   belongs_to :lawyer
   belongs_to :doctor
+  has_one :file
+end
+
+class ReactiveResource::File < ReactiveResource::Base
+  singleton
+  belongs_to :headshot
 end
 
 class ReactiveResource::Address < ReactiveResource::Base
