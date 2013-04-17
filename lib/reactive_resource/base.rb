@@ -92,7 +92,7 @@ module ReactiveResource
     # be in the URL anyway), so we'll try to inject them based on the
     # attributes of the object we just used.
     def load(attributes, remove_root=false)
-      attributes = attributes.stringify_keys
+      attributes = attributes ? attributes.stringify_keys : {}
       self.class.belongs_to_with_parents.each do |belongs_to_param|
         attributes["#{belongs_to_param}_id"] ||= prefix_options["#{belongs_to_param}_id".intern]
 
